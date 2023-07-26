@@ -1,0 +1,355 @@
+---
+title: "Mentorship Research Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code.
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*.
+
+```{r}
+# load required libraries
+library(tidyverse)
+library(growthcurver)
+library(viridis)
+library(scales)
+library(factoextra)
+library(haven)
+library(psych)
+library(rstatix)
+library("ggplot2") 
+library(ggplot2)
+library(ggExtra)
+options(digits = 3, scipen = NULL)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+base_dir <- "/Users/kaushikmedamanuri/Downloads"
+setwd(base_dir)
+
+data <- "Ultimate_Enchilada_v3.3_deidentified.sav"
+abacab <- read_sav(data) 
+```
+
+# Variables with relatively strong correlations
+
+```{r}
+abacab_few <- select(abacab, screenid, acinumb, sbis, sbasrewrd, cmrsttot, sbasdriv,  sbasfunsk, pbis, pbasrewrd, pbasdriv, pbasfunsk, sbisfp, sbasrewrdfp, sbasdrivfp, sbasfunskfp, pbisfp, pbasrewrdfp, pbasdrivfp, pbasfunskfp, ABpredDep)
+```
+
+```{r}
+cmrsttot_1 <- na.omit(select(abacab_few, sbasfunsk, cmrsttot))
+cor_test(cmrsttot_1)
+```
+
+```{r}
+cmrsttot_2 <- na.omit(select(abacab_few, pbasrewrd, cmrsttot))
+cor_test(cmrsttot_2)
+```
+
+```{r}
+cmrsttot_3 <- na.omit(select(abacab_few, pbasrewrdfp, cmrsttot))
+cor_test(cmrsttot_3)
+```
+
+```{r}
+ABpredDep_1 <- na.omit(select(abacab_few, pbis, ABpredDep))
+cor_test(ABpredDep_1)
+```
+
+```{r}
+ABpredDep_2 <- na.omit(select(abacab_few, pbasrewrd, ABpredDep))
+cor_test(ABpredDep_2)
+```
+
+```{r}
+ABpredDep_3 <- na.omit(select(abacab_few, pbisfp, ABpredDep))
+cor_test(ABpredDep_3)
+```
+
+```{r}
+ABpredDep_4 <- na.omit(select(abacab_few, pbasrewrdfp, ABpredDep))
+cor_test(ABpredDep_4)
+```
+
+# Regressions for selected variables
+
+```{r}
+print(summary(lm(test_var$cmrsttot~test_var$sbasfunsk)))
+```
+
+```{r}
+print(summary(lm(test_var$cmrsttot~test_var$pbasrewrd)))
+```
+
+```{r}
+# Flipped Scoring
+#print(summary(lm(test_var$cmrsttot~test_var$pbasrewrdfp)))
+```
+
+```{r}
+print(summary(lm(test_var$ABpredDep~test_var$pbis)))
+```
+
+```{r}
+print(summary(lm(test_var$ABpredDep~test_var$pbasrewrd)))
+```
+
+```{r}
+# Flipped scoring
+#print(summary(lm(test_var$ABpredDep~test_var$pbisfp)))
+```
+
+```{r}
+# Flipped Scoring
+# print(summary(lm(test_var$ABpredDep~test_var$pbasrewrdfp)))
+```
+
+# All Variable Regression Models
+
+```{r}
+cmrsttot_over<-setCor(cmrsttot~(sbis+sbasrewrd+sbasdriv+sbasfunsk+pbis+pbasrewrd+pbasdriv+pbasfunsk), data=abacab_few, std=TRUE)
+plot(cmrsttot_over)
+summary(cmrsttot_over)
+cmrsttot_over
+```
+
+```{r}
+ABpredDep_over<-setCor(ABpredDep~(sbis:sbasrewrd:sbasdriv:sbasfunsk:pbis:pbasrewrd:pbasdriv:pbasfunsk), data=abacab_few, std=TRUE)
+plot(ABpredDep_over)
+summary(ABpredDep_over)
+ABpredDep_over
+```
+
+# Regression Models for Each Dependent Variable
+
+```{r}
+cmrsttot_reg_1<-setCor(cmrsttot~(sbasfunsk:pbasrewrd), data=abacab_few, std=TRUE)
+plot(cmrsttot_reg_1)
+summary(cmrsttot_reg_1)
+cmrsttot_reg_1
+```
+
+```{r}
+cmrsttot_reg_2<-setCor(cmrsttot~(sbasfunsk:pbasrewrdfp), data=abacab_few, std=TRUE)
+plot(cmrsttot_reg_2)
+summary(cmrsttot_reg_2)
+cmrsttot_reg_2
+```
+
+```{r}
+ABpredDep_reg<-setCor(ABpredDep~(pbis:pbasrewrd), data=abacab_few, std=TRUE)
+plot(ABpredDep_reg)
+summary(ABpredDep_reg)
+ABpredDep_reg
+```
+
+# Correlations + Plots
+
+```{r}
+abacab_shorter<-abacab_few %>% select(sbis, sbasrewrd, sbasdriv,  sbasfunsk, pbis, pbasrewrd, pbasdriv, pbasfunsk, cmrsttot, ABpredDep) #make data subset
+describe(abacab_shorter) #Get N, min & max (compare to source docs), skew & kurtosis
+pairs.panels(abacab_shorter) #Look at histograms, scatterplots, LOESS smoother
+```
+
+```{r}
+DIFGraph <-ggplot(abacab, aes(x= sbasfunsk, y=cmrsttot))+geom_point() + scale_color_manual(values=c("#99BADD", "purple")) + geom_smooth(method="lm", se=FALSE) + xlab("Self-Reported BAS Fun Seeking Score")+ ylab("Teacher Child Mania Rating Scale Total") +geom_jitter()
+  
+#ggMarginal(DIFGraph, groupColour=TRUE, groupFill = TRUE)
+
+DIFGraph
+```
+
+```{r}
+DIFGraph2 <-ggplot(abacab, aes(x= pbis, y=ABpredDep, colour=as.factor(cgender)))+geom_point() + scale_color_manual(values=c("#99BADD", "purple")) + geom_smooth(method="lm", se=FALSE) + xlab("Parent-Reported BIS Score")+ ylab("ABACAB Predicted Depression Score") +geom_jitter()
+  
+ggMarginal(DIFGraph2, groupColour=TRUE, groupFill = TRUE)
+
+DIFGraph2
+```
+
+# Mediator Models
+
+This is an attempt to test the BAS dysregulation theory (an increase in BAS results in a decrease in BIS).
+
+```{r}
+mediationex<-mediate(cmrsttot~(sbis)+sbasfunsk+sbasrewrd, data=abacab_few, std=TRUE)
+plot(mediationex)
+summary(mediationex)
+mediationex
+```
+
+```{r}
+mediationex_2<-mediate(cmrsttot~(pbis)+pbasrewrd+pbasdriv, data=abacab_few, std=TRUE)
+plot(mediationex_2)
+summary(mediationex_2)
+mediationex_2
+```
+
+# Different ABACAB Dependent Variables
+## Rishi is leaning towards these as the main models!
+
+
+```{r}
+abacab_rim_step1 <- select(abacab, screenid, acinumb, sbis, sbasrewrd, sbasdriv,  sbasfunsk, pbis, pbasrewrd, pbasdriv, pbasfunsk, sbisfp, sbasrewrdfp, sbasdrivfp, sbasfunskfp, pbisfp, pbasrewrdfp, pbasdrivfp, pbasfunskfp, ldepagb9, ldeppgb9, lbhpgb9, lbhagb9)
+abacab_rim <- na.omit(abacab_rim_step1)
+cor_test(abacab_rim)
+```
+```{r}
+ldepagb9_self<-setCor(ldepagb9~(sbis+sbasrewrd+sbasdriv+sbasfunsk), data=abacab_rim, std=TRUE)
+plot(ldepagb9_self)
+summary(ldepagb9_self)
+ldepagb9_self
+```
+
+```{r}
+ldepagb9_par<-setCor(ldepagb9~(pbis+pbasrewrd+pbasdriv+pbasfunsk), data=abacab_rim, std=TRUE)
+plot(ldepagb9_par)
+summary(ldepagb9_par)
+ldepagb9_par
+
+anova(ldepagb9_over, ldepagb9_par)
+```
+
+# 2nd Set Regression Models
+
+```{r}
+ldepagb9_over<-setCor(ldepagb9~(sbis+sbasrewrd+sbasdriv+sbasfunsk+pbis+pbasrewrd+pbasdriv+pbasfunsk), data=abacab_rim, std=TRUE)
+plot(ldepagb9_over)
+summary(ldepagb9_over)
+ldepagb9_over
+```
+
+```{r}
+ldeppgb9_over<-setCor(ldeppgb9~(sbis+sbasrewrd+sbasdriv+sbasfunsk+pbis+pbasrewrd+pbasdriv+pbasfunsk), data=abacab_rim, std=TRUE)
+plot(ldeppgb9_over)
+summary(ldeppgb9_over)
+ldeppgb9_over
+```
+```{r}
+lbhpgb9_over<-setCor(lbhpgb9~(sbis+sbasrewrd+sbasdriv+sbasfunsk+pbis+pbasrewrd+pbasdriv+pbasfunsk), data=abacab_rim, std=TRUE)
+plot(lbhpgb9_over)
+summary(lbhpgb9_over)
+lbhpgb9_over
+```
+```{r}
+lbhagb9_over<-setCor(lbhagb9~(sbis+sbasrewrd+sbasdriv+sbasfunsk+pbis+pbasrewrd+pbasdriv+pbasfunsk), data=abacab_rim, std=TRUE)
+plot(lbhagb9_over)
+summary(lbhagb9_over)
+lbhagb9_over
+```
+# Second Set Correlations + Plots
+
+```{r}
+rim_short <-abacab_rim %>% select(sbis, sbasrewrd, sbasdriv,  sbasfunsk, pbis, pbasrewrd, pbasdriv, pbasfunsk, ldepagb9, ldeppgb9, lbhpgb9, lbhagb9) #make data subset
+describe(rim_short) #Get N, min & max (compare to source docs), skew & kurtosis
+pairs.panels(rim_short) #Look at histograms, scatterplots, LOESS smoother
+```
+# 2nd Set Mediators
+
+## ldepagb9
+
+```{r}
+mediationex_3s<-mediate(ldepagb9~(sbis)+sbasrewrd+sbasdriv, data=abacab, std=TRUE)
+plot(mediationex_3s)
+summary(mediationex_3s)
+mediationex_3s
+```
+
+
+```{r}
+mediationex_3p<-mediate(ldepagb9~(pbis)+pbasrewrd+pbasdriv, data=abacab, std=TRUE)
+plot(mediationex_3p)
+summary(mediationex_3p)
+mediationex_3p
+```
+## ldeppgb9
+
+```{r}
+mediationex_4s<-mediate(ldeppgb9~(sbis)+sbasrewrd+sbasdriv, data=abacab, std=TRUE)
+plot(mediationex_4s)
+summary(mediationex_4s)
+mediationex_4s
+```
+```{r}
+mediationex_4p<-mediate(ldeppgb9~(pbis)+pbasrewrd+pbasdriv, data=abacab, std=TRUE)
+plot(mediationex_4p)
+summary(mediationex_4p)
+mediationex_4p
+```
+## lbhpgb9
+
+```{r}
+mediationex_5s<-mediate(lbhpgb9~(sbis)+sbasrewrd+sbasdriv, data=abacab, std=TRUE)
+plot(mediationex_5s)
+summary(mediationex_5s)
+mediationex_5s
+```
+```{r}
+mediationex_5p<-mediate(lbhpgb9~(pbis)+pbasrewrd+pbasdriv, data=abacab, std=TRUE)
+plot(mediationex_5p)
+summary(mediationex_5p)
+mediationex_5p
+```
+## lbhagb9
+
+```{r}
+mediationex_6s<-mediate(lbhagb9~(sbis)+sbasrewrd+sbasdriv, data=abacab, std=TRUE)
+plot(mediationex_6s)
+summary(mediationex_6s)
+mediationex_6s
+```
+
+```{r}
+mediationex_6p<-mediate(lbhagb9~(pbis)+pbasrewrd+pbasdriv, data=abacab, std=TRUE)
+plot(mediationex_6p)
+summary(mediationex_6p)
+mediationex_6p
+```
+
+```{r}
+ldeppgb9_self<-setCor(ldeppgb9~(sbis+sbasrewrd+sbasdriv+sbasfunsk), data=abacab_rim, std=TRUE)
+plot(ldeppgb9_self)
+summary(ldeppgb9_self)
+ldeppgb9_self
+```
+
+
+```{r}
+ldeppgb9_par<-setCor(ldeppgb9~(pbis+pbasrewrd+pbasdriv+pbasfunsk), data=abacab_rim, std=TRUE)
+plot(ldeppgb9_par)
+summary(ldeppgb9_par)
+ldeppgb9_par
+anova(ldepagb9_over, ldeppgb9_par)
+```
+
+```{r}
+lbhpgb9_self<-setCor(lbhpgb9~(sbis+sbasrewrd+sbasdriv+sbasfunsk), data=abacab_rim, std=TRUE)
+plot(lbhpgb9_self)
+summary(lbhpgb9_self)
+lbhpgb9_self
+```
+
+```{r}
+lbhpgb9_par<-setCor(lbhpgb9~(pbis+pbasrewrd+pbasdriv+pbasfunsk), data=abacab_rim, std=TRUE)
+plot(lbhpgb9_par)
+summary(lbhpgb9_par)
+lbhpgb9_par
+anova(ldepagb9_over, lbhpgb9_par)
+```
+
+```{r}
+lbhagb9_self<-setCor(lbhagb9~(sbis+sbasrewrd+sbasdriv+sbasfunsk), data=abacab_rim, std=TRUE)
+plot(lbhagb9_self)
+summary(lbhagb9_self)
+lbhagb9_self
+```
+
+```{r}
+lbhagb9_par<-setCor(lbhagb9~(pbis+pbasrewrd+pbasdriv+pbasfunsk), data=abacab_rim, std=TRUE)
+plot(lbhagb9_par)
+summary(lbhagb9_par)
+lbhagb9_par
+anova(ldepagb9_over, lbhagb9_par)
+```
