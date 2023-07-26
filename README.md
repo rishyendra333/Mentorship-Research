@@ -1,6 +1,6 @@
 # Mentorship-Research
 
-Author: Rishyendra Medamanuri
+Author: Rishyendra Medamanuri  
 This project was conducted at the University of North Carolina at Chapel Hill.
 
 ## Abstract
