@@ -25,10 +25,10 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
-base_dir <- "/Users/kaushikmedamanuri/Downloads"
+base_dir <- "/Location of Folder"
 setwd(base_dir)
 
-data <- "Ultimate_Enchilada_v3.3_deidentified.sav"
+data <- "Data"
 abacab <- read_sav(data) 
 ```
 
